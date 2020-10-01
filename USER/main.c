@@ -1,106 +1,92 @@
-#include "delay.h"
-#include "sys.h"
-#include "usart.h"
-#include "lcd.h"
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: Yueyang
+ * @email: 1700695611@qq.com
+ * @Date: 2020-09-10 13:20:54
+ * @LastEditors: Yueyang
+ * @LastEditTime: 2020-09-30 02:10:26
+ */
+#include "sys.h" 	
+#include "delay.h"	
 #include "led.h"
-#include "gui.h"
-#include "Picture.h"
-#include "24cxx.h"
 #include "includes.h"
 
-//START ÈÎÎñ
-//ÉèÖÃÈÎÎñÓÅÏÈ¼¶
-#define START_TASK_PRIO			10  ///¿ªÊ¼ÈÎÎñµÄÓÅÏÈ¼¶Îª×îµÍ
-//ÉèÖÃÈÎÎñ¶ÑÕ»´óĞ¡
-#define START_STK_SIZE			128
-//ÈÎÎñÈÎÎñ¶ÑÕ»
+/////////////////////////UCOSIIä»»åŠ¡è®¾ç½®///////////////////////////////////
+//START ä»»åŠ¡
+//è®¾ç½®ä»»åŠ¡ä¼˜å…ˆçº§
+#define START_TASK_PRIO      			10 //å¼€å§‹ä»»åŠ¡çš„ä¼˜å…ˆçº§è®¾ç½®ä¸ºæœ€ä½
+//è®¾ç½®ä»»åŠ¡å †æ ˆå¤§å°
+#define START_STK_SIZE  				64
+//ä»»åŠ¡å †æ ˆ	
 OS_STK START_TASK_STK[START_STK_SIZE];
-//ÈÎÎñº¯Êı
-void start_task(void *pdata);
-
-//LED0ÈÎÎñ
-//ÉèÖÃÈÎÎñÓÅÏÈ¼¶
-#define LED0_TASK_PRIO			7
-//ÉèÖÃÈÎÎñ¶ÑÕ»´óĞ¡
-#define LED0_STK_SIZE			64
-//ÈÎÎñ¶ÑÕ»
+//ä»»åŠ¡å‡½æ•°
+void start_task(void *pdata);	
+ 			   
+//LED0ä»»åŠ¡
+//è®¾ç½®ä»»åŠ¡ä¼˜å…ˆçº§
+#define LED0_TASK_PRIO       			7 
+//è®¾ç½®ä»»åŠ¡å †æ ˆå¤§å°
+#define LED0_STK_SIZE  		    		64
+//ä»»åŠ¡å †æ ˆ	
 OS_STK LED0_TASK_STK[LED0_STK_SIZE];
-//ÈÎÎñº¯Êı
+//ä»»åŠ¡å‡½æ•°
 void led0_task(void *pdata);
 
-//´òÓ¡ÈÎÎñ
-//ÉèÖÃÈÎÎñÓÅÏÈ¼¶
-#define PRINT_TASK_PRIO			6
-//ÉèÖÃÈÎÎñ¶ÑÕ»´óĞ¡
-#define PRINT_STK_SIZE			64
-//ÈÎÎñ¶ÑÕ»
-OS_STK PRINT_TASK_STK[PRINT_STK_SIZE];
-//ÈÎÎñº¯Êı
-void print_task(void *pdata);
 
+//LED1ä»»åŠ¡
+//è®¾ç½®ä»»åŠ¡ä¼˜å…ˆçº§
+#define LED1_TASK_PRIO       			6 
+//è®¾ç½®ä»»åŠ¡å †æ ˆå¤§å°
+#define LED1_STK_SIZE  					64
+//ä»»åŠ¡å †æ ˆ
+OS_STK LED1_TASK_STK[LED1_STK_SIZE];
+//ä»»åŠ¡å‡½æ•°
+void led1_task(void *pdata);
 
-int main(void)
-{
-    uart_init(9600);
-    delay_init();//Delay init.
-	  LCD_Init();	   //Òº¾§ÆÁ³õÊ¼»¯
-	  LED_Init();
-    LCD_Clear(BLACK); //ÇåÆÁµÍ¹¦ºÄ
-	
-		OSInit();
-		OSTaskCreate(start_task,(void*)0,(OS_STK*)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO); //´´½¨¿ªÊ¼ÈÎÎñ
-		OSStart();
-	
-
-	
-// /**************************************************************************
-//	¹¦ÄÜ£º³õÊ¼»¯½çÃæ£¬°´ÏÂÒ»¼ü×Ô¶¯½øÈë
-//	×÷Õß£ºÑîÔ½
-//    Ê±¼ä£º2019/5/14
-//	***************************************************************/	
-//	
-//		while(1)
-//	{	
-//		LED0=!LED0;
-//		printf("Hello World");
-//		delay_ms(100);
-//					
-//	}	
-	
+ int main(void)
+ {	
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//è®¾ç½®ä¸­æ–­ä¼˜å…ˆçº§åˆ†ç»„ä¸ºç»„2ï¼š2ä½æŠ¢å ä¼˜å…ˆçº§ï¼Œ2ä½å“åº”ä¼˜å…ˆçº§
+	delay_init();	    //å»¶æ—¶å‡½æ•°åˆå§‹åŒ–	  
+	LED_Init();		  	//åˆå§‹åŒ–ä¸LEDè¿æ¥çš„ç¡¬ä»¶æ¥å£
+	OSInit();   
+ 	OSTaskCreate(start_task,(void *)0,(OS_STK *)&START_TASK_STK[START_STK_SIZE-1],START_TASK_PRIO );//åˆ›å»ºèµ·å§‹ä»»åŠ¡
+	OSStart();	  	 
 }
-
-
-//¿ªÊ¼ÈÎÎñ
+	  
+//å¼€å§‹ä»»åŠ¡
 void start_task(void *pdata)
 {
-	OS_CPU_SR cpu_sr=0;
-	pdata=pdata;
-	OSStatInit();  //¿ªÆôÍ³¼ÆÈÎÎñ
-	
-	OS_ENTER_CRITICAL();  //½øÈëÁÙ½çÇø(¹Ø±ÕÖĞ¶Ï)
-	OSTaskCreate(led0_task,(void*)0,(OS_STK*)&LED0_TASK_STK[LED0_STK_SIZE-1],LED0_TASK_PRIO);//´´½¨LED0ÈÎÎñ
-	OSTaskCreate(print_task,(void*)0,(OS_STK*)&PRINT_TASK_STK[PRINT_STK_SIZE-1],PRINT_TASK_PRIO);//´´½¨LED1ÈÎÎñ
-	OSTaskSuspend(START_TASK_PRIO);//¹ÒÆğ¿ªÊ¼ÈÎÎñ
-	OS_EXIT_CRITICAL();  //ÍË³öÁÙ½çÇø(¿ªÖĞ¶Ï)
+    OS_CPU_SR cpu_sr=0;
+	pdata = pdata; 
+  	OS_ENTER_CRITICAL();			//è¿›å…¥ä¸´ç•ŒåŒº(æ— æ³•è¢«ä¸­æ–­æ‰“æ–­)    
+ 	OSTaskCreate(led0_task,(void *)0,(OS_STK*)&LED0_TASK_STK[LED0_STK_SIZE-1],LED0_TASK_PRIO);						   
+ 	OSTaskCreate(led1_task,(void *)0,(OS_STK*)&LED1_TASK_STK[LED1_STK_SIZE-1],LED1_TASK_PRIO);	 				   
+	OSTaskSuspend(START_TASK_PRIO);	//æŒ‚èµ·èµ·å§‹ä»»åŠ¡.
+	OS_EXIT_CRITICAL();				//é€€å‡ºä¸´ç•ŒåŒº(å¯ä»¥è¢«ä¸­æ–­æ‰“æ–­)
 }
 
-//LED0ÈÎÎñ
+//LED0ä»»åŠ¡
 void led0_task(void *pdata)
-{
+{	 	
 	while(1)
 	{
-		LED0=0; 
+		LED0=0;
 		delay_ms(80);
 		LED0=1;
-		delay_ms(100);
-	}
+		delay_ms(920);
+	};
 }
 
-void print_task(void *pdata)
-{
+//LED1ä»»åŠ¡
+void led1_task(void *pdata)
+{	  
 	while(1)
 	{
-			printf("Hello World");
-			delay_ms(100);
-	}
+		LED1=0;
+		delay_ms(300);
+		LED1=1;
+		delay_ms(300);
+	};
 }
+

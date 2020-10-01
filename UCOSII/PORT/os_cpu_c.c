@@ -35,12 +35,12 @@
 static  INT16U  OSTmrCtr;
 #endif
 
-
+//定义及格钩子函数，就是在一些固定情况下会被调用的函数
 /*
 *********************************************************************************************************
 *                                       OS INITIALIZATION HOOK
 *                                            (BEGINNING)
-*
+*初始化开始是的钩子函数
 * Description: This function is called by OSInit() at the beginning of OSInit().
 *
 * Arguments  : none
@@ -61,7 +61,7 @@ void  OSInitHookBegin (void)
 *********************************************************************************************************
 *                                       OS INITIALIZATION HOOK
 *                                               (END)
-*
+*INIT结束时的钩子函数
 * Description: This function is called by OSInit() at the end of OSInit().
 *
 * Arguments  : none
@@ -78,7 +78,7 @@ void  OSInitHookEnd (void)
 /*
 *********************************************************************************************************
 *                                          TASK CREATION HOOK
-*
+*创建任务时的钩子函数
 * Description: This function is called when a task is created.
 *
 * Arguments  : ptcb   is a pointer to the task control block of the task being created.
@@ -101,7 +101,7 @@ void  OSTaskCreateHook (OS_TCB *ptcb)
 /*
 *********************************************************************************************************
 *                                           TASK DELETION HOOK
-*
+*删除任务时的钩子函数
 * Description: This function is called when a task is deleted.
 *
 * Arguments  : ptcb   is a pointer to the task control block of the task being deleted.
@@ -123,7 +123,7 @@ void  OSTaskDelHook (OS_TCB *ptcb)
 /*
 *********************************************************************************************************
 *                                             IDLE TASK HOOK
-*
+*空闲任务的钩子函数
 * Description: This function is called by the idle task.  This hook has been added to allow you to do
 *              such things as STOP the CPU to conserve power.
 *
@@ -144,7 +144,7 @@ void  OSTaskIdleHook (void)
 /*
 *********************************************************************************************************
 *                                           STATISTIC TASK HOOK
-*
+*统计任务的钩子函数
 * Description: This function is called every second by uC/OS-II's statistics task.  This allows your
 *              application to add functionality to the statistics task.
 *
@@ -164,7 +164,7 @@ void  OSTaskStatHook (void)
 /*
 *********************************************************************************************************
 *                                        INITIALIZE A TASK'S STACK
-*
+*这个函数会被OSTaskCreate() 调用，用做一个任务堆栈的初始化
 * Description: This function is called by either OSTaskCreate() or OSTaskCreateExt() to initialize the
 *              stack frame of the task being created.  This function is highly processor specific.
 *
@@ -195,8 +195,8 @@ OS_STK *OSTaskStkInit (void (*task)(void *p_arg), void *p_arg, OS_STK *ptos, INT
 
 
     (void)opt;                                   /* 'opt' is not used, prevent warning                 */
-    stk       = ptos;                            /* Load stack pointer                                 */
-
+    stk       = ptos;                            /* 加载任务的栈顶指针Load stack pointer                                 */
+//这些数值除了前几个，其他都是瞎几把乱写的
                                                  /* Registers stacked as if auto-saved on exception    */
     *(stk)    = (INT32U)0x01000000L;             /* xPSR                                               */
     *(--stk)  = (INT32U)task;                    /* Entry Point                                        */
@@ -223,7 +223,7 @@ OS_STK *OSTaskStkInit (void (*task)(void *p_arg), void *p_arg, OS_STK *ptos, INT
 /*
 *********************************************************************************************************
 *                                           TASK SWITCH HOOK
-*
+*任务切换勾函数
 * Description: This function is called when a task switch is performed.  This allows you to perform other
 *              operations during a context switch.
 *
@@ -247,7 +247,7 @@ void  OSTaskSwHook (void)
 /*
 *********************************************************************************************************
 *                                           OS_TCBInit() HOOK
-*
+*TCB初始化勾函数
 * Description: This function is called by OS_TCBInit() after setting up most of the TCB.
 *
 * Arguments  : ptcb    is a pointer to the TCB of the task being created.
@@ -270,7 +270,7 @@ void  OSTCBInitHook (OS_TCB *ptcb)
 /*
 *********************************************************************************************************
 *                                               TICK HOOK
-*
+*OS TICK勾函数，每进入一次TICK中断运行一次
 * Description: This function is called every tick.
 *
 * Arguments  : none

@@ -13,7 +13,7 @@
 * LICENSING TERMS:
 * ---------------
 *   uC/OS-II is provided in source form for FREE evaluation, for educational use or for peaceful research.
-* If you plan on using  uC/OS-II  in a commercial product you need to contact Micri�m to properly license
+* If you plan on using  uC/OS-II  in a commercial product you need to contact Micri�m to properly license
 * its use in your product. We provide ALL the source code for your convenience and to help you experience
 * uC/OS-II.   The fact that the  source is provided does  NOT  mean that you can use it without  paying a
 * licensing fee.
@@ -48,6 +48,7 @@ extern "C" {
 /*
 *********************************************************************************************************
 *                                             MISCELLANEOUS
+* 一些混杂的设定
 *********************************************************************************************************
 */
 
@@ -97,7 +98,7 @@ extern "C" {
 /*$PAGE*/
 /*
 *********************************************************************************************************
-*                              TASK STATUS (Bit definition for OSTCBStat)
+*                             任务状态字代表任务的7种状态 TASK STATUS (Bit definition for OSTCBStat)
 *********************************************************************************************************
 */
 #define  OS_STAT_RDY                 0x00u  /* Ready to run                                            */
@@ -122,7 +123,7 @@ extern "C" {
 
 /*
 *********************************************************************************************************
-*                                        OS_EVENT types
+*                                     事件类型   OS_EVENT types
 *********************************************************************************************************
 */
 #define  OS_EVENT_TYPE_UNUSED           0u
@@ -137,7 +138,7 @@ extern "C" {
 
 /*
 *********************************************************************************************************
-*                                         EVENT FLAGS
+*                                       事件标志  EVENT FLAGS
 *********************************************************************************************************
 */
 #define  OS_FLAG_WAIT_CLR_ALL           0u  /* Wait for ALL    the bits specified to be CLR (i.e. 0)   */
@@ -338,7 +339,7 @@ extern "C" {
 /*$PAGE*/
 /*
 *********************************************************************************************************
-*                                          EVENT CONTROL BLOCK
+*                                         事件控制块 EVENT CONTROL BLOCK
 *********************************************************************************************************
 */
 
@@ -350,11 +351,11 @@ typedef  INT16U   OS_PRIO;
 
 #if (OS_EVENT_EN) && (OS_MAX_EVENTS > 0u)
 typedef struct os_event {
-    INT8U    OSEventType;                    /* Type of event control block (see OS_EVENT_TYPE_xxxx)    */
-    void    *OSEventPtr;                     /* Pointer to message or queue structure                   */
-    INT16U   OSEventCnt;                     /* Semaphore Count (not used if other EVENT type)          */
-    OS_PRIO  OSEventGrp;                     /* Group corresponding to tasks waiting for event to occur */
-    OS_PRIO  OSEventTbl[OS_EVENT_TBL_SIZE];  /* List of tasks waiting for event to occur                */
+    INT8U    OSEventType;                    /*事件类型 Type of event control block (see OS_EVENT_TYPE_xxxx)    */
+    void    *OSEventPtr;                     /*指向消息或者消息队列的指针Pointer to message or queue structure                   */
+    INT16U   OSEventCnt;                     /*计数器Semaphore Count (not used if other EVENT type)          */
+    OS_PRIO  OSEventGrp;                     /*等待任务所在的组Group corresponding to tasks waiting for event to occur */
+    OS_PRIO  OSEventTbl[OS_EVENT_TBL_SIZE];  /*等待任务列表List of tasks waiting for event to occur                */
 
 #if OS_EVENT_NAME_EN > 0u
     INT8U   *OSEventName;
@@ -365,7 +366,7 @@ typedef struct os_event {
 
 /*
 *********************************************************************************************************
-*                                       EVENT FLAGS CONTROL BLOCK
+*                                       事件标志控制块EVENT FLAGS CONTROL BLOCK
 *********************************************************************************************************
 */
 
@@ -412,7 +413,7 @@ typedef struct os_flag_node {               /* Event Flag Wait List Node        
 /*$PAGE*/
 /*
 *********************************************************************************************************
-*                                          MESSAGE MAILBOX DATA
+*                                         消息队列的数据结构 MESSAGE MAILBOX DATA
 *********************************************************************************************************
 */
 
@@ -426,7 +427,7 @@ typedef struct os_mbox_data {
 
 /*
 *********************************************************************************************************
-*                                     MEMORY PARTITION DATA STRUCTURES
+*                                    内存的数据结构 MEMORY PARTITION DATA STRUCTURES
 *********************************************************************************************************
 */
 
@@ -456,7 +457,7 @@ typedef struct os_mem_data {
 /*$PAGE*/
 /*
 *********************************************************************************************************
-*                                    MUTUAL EXCLUSION SEMAPHORE DATA
+*                                   互斥信号量数据 MUTUAL EXCLUSION SEMAPHORE DATA
 *********************************************************************************************************
 */
 

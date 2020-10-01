@@ -64,7 +64,7 @@ void  Adc_Init(void)
 u16 Get_Adc(u8 ch)   
 {
   	//设置指定ADC的规则组通道，一个序列，采样时间
-	ADC_RegularChannelConfig(ADC1, ch, 1, ADC_SampleTime_239Cycles5 );	//ADC1,ADC通道,采样时间为239.5周期	  			    
+	ADC_RegularChannelConfig(ADC1, ch, 1, ADC_SampleTime_28Cycles5 );	//ADC1,ADC通道,采样时间为239.5周期	  			    
   
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);		//使能指定的ADC1的软件转换启动功能	
 	 
@@ -87,18 +87,6 @@ u16 Get_Adc_Average(u8 ch,u8 times)
 
 
 
-u16 PS2_Scan(void)
-{  u8 x,y;
-   x=Get_Adc_Average(ADC_Channel_2,1);
-   y=Get_Adc_Average(ADC_Channel_3,1);
-	printf("%d,%d\n",x,y);
-   if(y==255){return 1;}
-   else if(y==0){return 2;}
-   else if(x==0){return 3;}
-   else if(x==255){return 4;}
-   else {return 0;}
-
-}
 
 
 

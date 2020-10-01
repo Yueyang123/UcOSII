@@ -3,10 +3,10 @@
 ;* Author		: Librae 
 ;* Version		: V1.0
 ;* Date			: 06/10/2010
-;* Description	: ¦ÌCOS-II asm port	for STM32
+;* Description	: å…³äºSTM32çš„åº•å±‚ä»£ç æä¾›
 ;*******************************************************************************/
 
-		IMPORT  OSRunning               ; External references
+		IMPORT  OSRunning               ; å¼•å…¥å¤–ç•Œçš„å˜é‡
         IMPORT  OSPrioCur
         IMPORT  OSPrioHighRdy
         IMPORT  OSTCBCur
@@ -18,16 +18,16 @@
         EXPORT  OSStartHighRdy               
         EXPORT  OSCtxSw
         EXPORT  OSIntCtxSw
-		EXPORT  OS_CPU_SR_Save                                      ; Functions declared in this file
+		EXPORT  OS_CPU_SR_Save         ; å‘å¤–éƒ¨æä¾›çš„å‡½æ•°
     	EXPORT  OS_CPU_SR_Restore       
         EXPORT  PendSV_Handler
         	
      
-NVIC_INT_CTRL   	EQU     0xE000ED04  ; ÖĞ¶Ï¿ØÖÆ¼Ä´æÆ÷
-NVIC_SYSPRI2    	EQU     0xE000ED20  ; ÏµÍ³ÓÅÏÈ¼¶¼Ä´æÆ÷(2)
-NVIC_PENDSV_PRI 	EQU     0xFFFF0000  ; PendSVÖĞ¶ÏºÍÏµÍ³½ÚÅÄÖĞ¶Ï
-                                        ; (¶¼Îª×îµÍ£¬0xff).
-NVIC_PENDSVSET  	EQU     0x10000000  ; ´¥·¢Èí¼şÖĞ¶ÏµÄÖµ.
+NVIC_INT_CTRL   	EQU     0xE000ED04  ; ä¸­æ–­æ§åˆ¶å¯„å­˜å™¨çš„åœ°å€
+NVIC_SYSPRI2    	EQU     0xE000ED20  ; ç³»ç»Ÿä¼˜å…ˆçº§å¯„å­˜å™¨
+NVIC_PENDSV_PRI 	EQU     0xFFFF0000  ; PendSVçš„ä¼˜å…ˆçº§ï¼ˆæœ€ä½ï¼‰
+                                        ;
+NVIC_PENDSVSET  	EQU     0x10000000  ; è§¦å‘PendSVä¸­æ–­çš„æ•°å€¼
 
 
 		PRESERVE8 
@@ -70,24 +70,37 @@ NVIC_PENDSVSET  	EQU     0x10000000  ; ´¥·¢Èí¼şÖĞ¶ÏµÄÖµ.
 ;********************************************************************************************************
 
 OS_CPU_SR_Save
-    MRS     R0, PRIMASK  	;¶ÁÈ¡PRIMASKµ½R0,R0Îª·µ»ØÖµ 
-    CPSID   I				;PRIMASK=1,¹ØÖĞ¶Ï(NMIºÍÓ²¼şFAULT¿ÉÒÔÏìÓ¦)
-    BX      LR			    ;·µ»Ø
+    MRS     R0, PRIMASK  	;åŠ è½½PRIMASKå¯„å­˜å™¨åœ°å€
+    CPSID   I				;PRIMASK=1,å…³é—­æ‰€æœ‰ä¸­æ–­ï¼ˆé™¤äº†nmi and hardfaultï¼‰
+    BX      LR			    ;è¿”å›
 
 OS_CPU_SR_Restore
-    MSR     PRIMASK, R0	   	;¶ÁÈ¡R0µ½PRIMASKÖĞ,R0Îª²ÎÊı
-    BX      LR				;·µ»Ø
+    MSR     PRIMASK, R0	   	;
+    BX      LR				;
 
 
-;/**************************************************************************************
-;* º¯ÊıÃû³Æ: OSStartHighRdy
-;*
-;* ¹¦ÄÜÃèÊö: Ê¹ÓÃµ÷¶ÈÆ÷ÔËĞĞµÚÒ»¸öÈÎÎñ
-;* 
-;* ²Î    Êı: None
-;*
-;* ·µ »Ø Öµ: None
-;**************************************************************************************/  
+
+;********************************************************************************************************
+;                                          START MULTITASKING  å¼€å§‹ä»»åŠ¡
+;                                       void OSStartHighRdy(void) 
+;
+; Note(s) : 1) This function triggers a PendSV exception (essentially, causes a context switch) to cause
+;              the first task to start.å‡½æ•°è§¦å‘PendSVå¼‚å¸¸ï¼ˆä»æœ¬è´¨ä¸Šè®²,æ˜¯å¯¼è‡´ä¸Šä¸‹æ–‡åˆ‡æ¢ï¼‰å¯¼è‡´ç¬¬ä¸€ä¸ªä»»åŠ¡å¼€å§‹
+;
+;           2) OSStartHighRdy() MUST: å…³é”®æµç¨‹
+;              a) Setup PendSV exception priority to lowest;
+;									è®¾ç½®PendSVå¼‚å¸¸ä¼˜å…ˆçº§åˆ°æœ€ä½
+;              b) Set initial PSP to 0, to tell context switcher this is first run;
+;									è®¾ç½®åˆå§‹è¿›ç¨‹å †æ ˆåˆ°0ä½ç½®ï¼Œç›®çš„æ˜¯å‘Šè¯‰ä¸Šä¸‹æ–‡/ä»»åŠ¡åˆ‡æ¢å™¨è¿™ä¸ªå‡½æ•°ç¬¬ä¸€ä¸ªæ‰§è¡Œ
+;              c) Set OSRunning to TRUE;
+;									è®¾ç½®OSRunningæ ‡å¿—ä¸ºTRUE
+;              d) Trigger PendSV exception;
+;									åˆ‡æ¢PendSVå¼‚å¸¸
+;              e) Enable interrupts (tasks will run with interrupts enabled).
+;									ä½¿èƒ½ä¸­æ–­ï¼ˆä»»åŠ¡å°†é€šè¿‡å¯ç”¨ä¸­æ–­è¿è¡Œï¼‰
+;               å…¶é€šè¿‡OSSTart()å®Œæˆè°ƒç”¨
+;********************************************************************************************************
+ 
 
 OSStartHighRdy
         LDR     R4, =NVIC_SYSPRI2      ; set the PendSV exception priority
@@ -95,74 +108,59 @@ OSStartHighRdy
         STR     R5, [R4]
 
         MOV     R4, #0                 ; set the PSP to 0 for initial context switch call
-        MSR     PSP, R4
-
+        MSR     PSP, R4                ; å°†PSPæŒ‡é’ˆæ‹¨åˆ°ç©ºé—²ä»»åŠ¡çš„å¼€å§‹ä½ç½®
+                                       ; PENDSVå›å»æ‰§è¡ŒPendSV_Handler_Nosave
         LDR     R4, =OSRunning         ; OSRunning = TRUE
-        MOV     R5, #1
+        MOV     R5, #1                 ; å‘Šè¯‰ç³»ç»Ÿå¼€å§‹è¿è¡Œ
         STRB    R5, [R4]
 
-                                       ;ÇĞ»»µ½×î¸ßÓÅÏÈ¼¶µÄÈÎÎñ
-        LDR     R4, =NVIC_INT_CTRL     ;rigger the PendSV exception (causes context switch)
-        LDR     R5, =NVIC_PENDSVSET
+                                       ;
+        LDR     R4, =NVIC_INT_CTRL     ;trigger the PendSV exception (causes context switch)
+        LDR     R5, =NVIC_PENDSVSET    ;è§¦å‘PENDSVä¸­æ–­
         STR     R5, [R4]
 
         CPSIE   I                      ;enable interrupts at processor level
 OSStartHang
         B       OSStartHang            ;should never get here
 
-;/**************************************************************************************
-;* º¯ÊıÃû³Æ: OSCtxSw
-;*
-;* ¹¦ÄÜÃèÊö: ÈÎÎñ¼¶ÉÏÏÂÎÄÇĞ»»         
-;*
-;* ²Î    Êı: None
-;*
-;* ·µ »Ø Öµ: None
-;***************************************************************************************/
-  
+
+;********************************************************************************************************
+;                               PERFORM A CONTEXT SWITCH (From task level) ä»ä»»åŠ¡çº§æ‰§è¡Œä¸€ä¸ªä¸Šä¸‹æ–‡åˆ‡æ¢
+;                                           void OSCtxSw(void)
+;
+; Note(s) : 1) OSCtxSw() is called when OS wants to perform a task context switch.  This function
+;              triggers the PendSV exception which is where the real work is done.
+;OSCtxSw å’Œ OSIntCtxSw è¿™ä¸¤ä¸ªæ˜¯ç”¨æ¥åšä»»åŠ¡åˆ‡æ¢çš„ï¼Œè¿™ä¸¤ä¸ªçœ‹èµ·æ¥éƒ½æ˜¯ä¸€æ ·çš„ï¼Œå…¶å®å®ƒ
+;ä»¬éƒ½åªæ˜¯è§¦å‘ä¸€ä¸ª PendSV ä¸­æ–­ï¼Œå…·ä½“çš„åˆ‡æ¢è¿‡ç¨‹åœ¨ PendSV ä¸­æ–­æœåŠ¡å‡½æ•°é‡Œé¢è¿›è¡Œã€‚è¿™ä¸¤ä¸ª
+;å‡½æ•°çœ‹èµ·æ¥æ˜¯ä¸€æ ·çš„ï¼Œä½†æ˜¯ä»–ä»¬çš„æ„ä¹‰æ˜¯ä¸åŒçš„ï¼ŒOSCtxSw æ˜¯ä»»åŠ¡çº§åˆ‡æ¢ï¼Œæ¯”å¦‚ä»ä»»åŠ¡ A åˆ‡æ¢
+;********************************************************************************************************
+
 OSCtxSw
 		PUSH    {R4, R5}
-        LDR     R4, =NVIC_INT_CTRL  	;´¥·¢PendSVÒì³£ (causes context switch)
+        LDR     R4, =NVIC_INT_CTRL  	;ä¸­æ–­æ§åˆ¶å¯„å­˜å™¨æ‰€åœ¨çš„åœ°å€ (causes context switch)
         LDR     R5, =NVIC_PENDSVSET
         STR     R5, [R4]
 		POP     {R4, R5}
         BX      LR
 
-;/**************************************************************************************
-;* º¯ÊıÃû³Æ: OSIntCtxSw
-;*
-;* ¹¦ÄÜÃèÊö: ÖĞ¶Ï¼¶ÈÎÎñÇĞ»»
-;*
-;* ²Î    Êı: None
-;*
-;* ·µ »Ø Öµ: None
-;***************************************************************************************/
-
+;ä¸­æ–­åˆ‡æ¢åˆ°ä»»åŠ¡
 OSIntCtxSw
 		PUSH    {R4, R5}
-        LDR     R4, =NVIC_INT_CTRL      ;´¥·¢PendSVÒì³£ (causes context switch)
+        LDR     R4, =NVIC_INT_CTRL
         LDR     R5, =NVIC_PENDSVSET
         STR     R5, [R4]
 		POP     {R4, R5}
         BX      LR
-        NOP
+        NOP             ;æç¤ºMCUæˆ‘å·²ç»å®Œæˆäº†å…¥æ ˆä¸éœ€è¦å†è¿›è¡Œä¸€æ¬¡
 
-;/**************************************************************************************
-;* º¯ÊıÃû³Æ: OSPendSV
-;*
-;* ¹¦ÄÜÃèÊö: OSPendSV is used to cause a context switch.
-;*
-;* ²Î    Êı: None
-;*
-;* ·µ »Ø Öµ: None
-;***************************************************************************************/
 
 PendSV_Handler
-    CPSID   I                                                   ; Prevent interruption during context switch
-    MRS     R0, PSP                                             ; PSP is process stack pointer Èç¹ûÔÚÓÃPSP¶ÑÕ»,Ôò¿ÉÒÔºöÂÔ±£´æ¼Ä´æÆ÷,²Î¿¼CM3È¨ÍşÖĞµÄË«¶ÑÕ»-°×²Ë×¢
-    CBZ     R0, PendSV_Handler_Nosave		                    ; Skip register save the first time
+    CPSID   I                                                   ; å…³é—­ä¸­æ–­ Prevent interruption during context switch
+    MRS     R0, PSP                                             ; PSP is process stack pointer
+    CBZ     R0, PendSV_Handler_Nosave		                    ; PSPæ˜¯å¦ç­‰äº0ï¼Œåˆ¤æ–­æ˜¯ä¸æ˜¯ç¬¬ä¸€æ¬¡è°ƒç”¨
+                                                                ; å¦‚æœæ˜¯çš„è¯ä¸‹é¢ä¸€æ®µå°±ä¸éœ€è¦æ‰§è¡Œäº†Skip register save the first time
 
-    SUBS    R0, R0, #0x20                                       ; Save remaining regs r4-11 on process stack
+    SUBS    R0, R0, #0x20                                       ; 0x20ä»£è¡¨éœ€è¦å‘å †æ ˆå‹å…¥32ä¸ªå­—èŠ‚Save remaining regs r4-11 on process stack
     STM     R0, {R4-R11}
 
     LDR     R1, =OSTCBCur                                       ; OSTCBCur->OSTCBStkPtr = SP;
@@ -171,7 +169,7 @@ PendSV_Handler
 
                                                                 ; At this point, entire context of process has been saved
 PendSV_Handler_Nosave
-    PUSH    {R14}                                               ; Save LR exc_return value
+    PUSH    {R14}                                               ; è°ƒç”¨ç‹—å­å‡½æ•°Save LR exc_return value
     LDR     R0, =OSTaskSwHook                                   ; OSTaskSwHook();
     BLX     R0
     POP     {R14}
@@ -181,17 +179,17 @@ PendSV_Handler_Nosave
     LDRB    R2, [R1]
     STRB    R2, [R0]
 
-    LDR     R0, =OSTCBCur                                       ; OSTCBCur  = OSTCBHighRdy;
-    LDR     R1, =OSTCBHighRdy
+    LDR     R0, =OSTCBCur                                       ; *R0=R2 æ—¢OSTCBCur  = OSTCBHighRdy;
+    LDR     R1, =OSTCBHighRdy                                   ; æ˜¯ä»»åŠ¡æ§åˆ¶å—ç»“æ„ä½“æŒ‡é’ˆå¯ä»¥æŒ‡å‘æœ€è¯¥ä¼˜å…ˆçº§çš„æŒ‡é’ˆ
     LDR     R2, [R1]
     STR     R2, [R0]
 
-    LDR     R0, [R2]                                            ; R0 is new process SP; SP = OSTCBHighRdy->OSTCBStkPtr;
-    LDM     R0, {R4-R11}                                        ; Restore r4-11 from new process stack
+    LDR     R0, [R2]                                            ; R0=OSTCBHighRdy R0 is new process SP; SP = OSTCBHighRdy->OSTCBStkPtr;
+    LDM     R0, {R4-R11}                                        ; æ¢å¤å †æ ˆRestore r4-11 from new process stack
     ADDS    R0, R0, #0x20
-    MSR     PSP, R0                                             ; Load PSP with new process SP
-    ORR     LR, LR, #0x04                                       ; Ensure exception return uses process stack
-    CPSIE   I
+    MSR     PSP, R0                                             ; R0+=0X20 R0å°±æ˜¯æ˜Ÿä»»åŠ¡çš„æ ˆé¡¶æŒ‡é’ˆLoad PSP with new process SP
+    ORR     LR, LR, #0x04                                       ; å°†PSPçš„å€¼å˜ä¸ºR0 Ensure exception return uses process stack
+    CPSIE   I                                                   ; å°†LR ä½2ç½®1 ï¼Œè¡¨ç¤ºè¿”å›åå›åˆ°è¿›ç¨‹
     BX      LR                                                  ; Exception return will restore remaining context
 
  end  

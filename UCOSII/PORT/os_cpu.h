@@ -1,12 +1,17 @@
-/************************ (C) COPYLEFT 2010 Leafgrass *************************
+/*
+ * @Descripttion: 
+ * @version: 
+ * @Author: Yueyang
+ * @email: 1700695611@qq.com
+ * @Date: 2020-09-10 13:29:32
+ * @LastEditors: Yueyang
+ * @LastEditTime: 2020-09-30 01:48:07
+ * @Describe:å‘å¤–ç•Œæä¾›äº†OS_TASK_SW()å‡½æ•°ï¼Œ
+ * #define  OS_ENTER_CRITICAL()  {cpu_sr = OS_CPU_SR_Save();}//å…³é—­ä¸­æ–­è¿›å…¥ç²å§åŒº
+ * #define  OS_EXIT_CRITICAL()   {OS_CPU_SR_Restore(cpu_sr);}//å¼€ä¸­æ–­
+ * å®šä¹‰å„ç§ç»“æ„ç±»å‹
+ */
 
-* File Name		: os_cpu_c.c 
-* Author		: Librae
-* Date			: 06/10/2010
-* Description	: ¦ÌCOS-IIÔÚSTM32ÉÏµÄÒÆÖ²´úÂëCÓïÑÔ²¿·Ö£¬
-*				  °üÀ¨ÈÎÎñ¶ÑÕ»³õÊ¼»¯´úÂëºÍ¹³×Óº¯ÊıµÈ
-
-******************************************************************************/
 
 #ifndef	__OS_CPU_H__
 #define	__OS_CPU_H__
@@ -17,9 +22,6 @@
 #define OS_CPU_EXT  extern
 #endif
 
-/******************************************************************************
-*                    ¶¨ÒåÓë±àÒëÆ÷ÎŞ¹ØµÄÊı¾İÀàĞÍ
-******************************************************************************/
 
 typedef unsigned char  BOOLEAN;
 typedef unsigned char  INT8U;			/* Unsigned  8 bit quantity       */
@@ -31,7 +33,7 @@ typedef signed   int   INT32S;			/* Signed   32 bit quantity       */
 typedef float          FP32;			/* Single precision floating point*/
 typedef double         FP64;			/* Double precision floating point*/
 
-//STM32ÊÇ32Î»Î»¿íµÄ,ÕâÀïOS_STKºÍOS_CPU_SR¶¼Ó¦¸ÃÎª32Î»Êı¾İÀàĞÍ
+//STM32æ˜¯32ä½çš„ï¼Œæ‰€ä»¥å †æ ˆä¸CPUçŠ¶æ€å¯„å­˜å™¨ä¹Ÿåº”è¯¥æ˜¯32ä½çš„
 typedef unsigned int   OS_STK;			/* Each stack entry is 32-bit wide*/
 typedef unsigned int   OS_CPU_SR;		/* Define size of CPU status register*/
 /* 
@@ -49,10 +51,10 @@ typedef unsigned int   OS_CPU_SR;		/* Define size of CPU status register*/
 */
 
 
-//¶¨ÒåÕ»µÄÔö³¤·½Ïò.
-//CM3ÖĞ,Õ»ÊÇÓÉ¸ßµØÖ·ÏòµÍµØÖ·Ôö³¤µÄ,ËùÒÔOS_STK_GROWTHÉèÖÃÎª1
+//å®šä¹‰æ ˆçš„å¢é•¿æ–¹å‘.
+//CM3 ä¸­,æ ˆæ˜¯ç”±é«˜åœ°å€å‘ä½åœ°å€å¢é•¿çš„,æ‰€ä»¥ OS_STK_GROWTH è®¾ç½®ä¸º 1
 #define  OS_STK_GROWTH        1      /* Stack grows from HIGH to LOW memory on ARM    */
-//ÈÎÎñÇĞ»»ºê,ÓÉ»ã±àÊµÏÖ.
+//ä»»åŠ¡åˆ‡æ¢å®,ç”±æ±‡ç¼–å®ç°.
 #define  OS_TASK_SW()         OSCtxSw()
 
 /*
@@ -61,11 +63,10 @@ typedef unsigned int   OS_CPU_SR;		/* Define size of CPU status register*/
 *                           (see OS_CPU_A.ASM)
 *******************************************************************************
 */
-//OS_CRITICAL_METHOD = 1 :Ö±½ÓÊ¹ÓÃ´¦ÀíÆ÷µÄ¿ª¹ØÖĞ¶ÏÖ¸ÁîÀ´ÊµÏÖºê 
-//OS_CRITICAL_METHOD = 2 :ÀûÓÃ¶ÑÕ»±£´æºÍ»Ö¸´CPUµÄ×´Ì¬ 
-//OS_CRITICAL_METHOD = 3 :ÀûÓÃ±àÒëÆ÷À©Õ¹¹¦ÄÜ»ñµÃ³ÌĞò×´Ì¬×Ö£¬±£´æÔÚ¾Ö²¿±äÁ¿cpu_sr
-
-#define  OS_CRITICAL_METHOD   3	 	//½øÈëÁÙ½ç¶ÎµÄ·½·¨
+//OS_CRITICAL_METHOD = 1 :ç›´æ¥ä½¿ç”¨å¤„ç†å™¨çš„å¼€å…³ä¸­æ–­æŒ‡ä»¤æ¥å®ç°å®
+//OS_CRITICAL_METHOD = 2 :åˆ©ç”¨å †æ ˆä¿å­˜å’Œæ¢å¤ CPU çš„çŠ¶æ€
+//OS_CRITICAL_METHOD = 3 :åˆ©ç”¨ç¼–è¯‘å™¨æ‰©å±•åŠŸèƒ½è·å¾—ç¨‹åºçŠ¶æ€å­—ï¼Œä¿å­˜åœ¨å±€éƒ¨å˜é‡ cpu_sr
+#define  OS_CRITICAL_METHOD   3	 	//ï¿½ï¿½ï¿½ï¿½ï¿½Ù½ï¿½ÎµÄ·ï¿½ï¿½ï¿½
 
 #if OS_CRITICAL_METHOD == 3
 #define  OS_ENTER_CRITICAL()  {cpu_sr = OS_CPU_SR_Save();}

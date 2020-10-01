@@ -40,7 +40,7 @@ typedef struct
 extern _lcd_dev lcddev;	//管理LCD重要参数
 /////////////////////////////////////用户配置区///////////////////////////////////	 
 //支持横竖屏快速定义切换，支持8/16位模式切换
-#define USE_HORIZONTAL  	0	//定义是否使用横屏 		0,不使用.1,使用.
+#define USE_HORIZONTAL  	1	//定义是否使用横屏 		0,不使用.1,使用.
 //使用硬件SPI 还是模拟SPI作为测试
 #define USE_HARDWARE_SPI    1  //1:Enable Hardware SPI;0:USE Soft SPI
 //////////////////////////////////////////////////////////////////////////////////	  

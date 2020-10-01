@@ -253,7 +253,7 @@ void LCD_WriteRAM_Prepare(void)
 void LCD_DrawPoint(u16 x,u16 y)
 {
 	LCD_SetCursor(x,y);//设置光标位置 
-	LCD_WR_DATA_16Bit(POINT_COLOR);
+	LCD_WR_DATA_16Bit(RED);
 }
 
 //******************************************************************
